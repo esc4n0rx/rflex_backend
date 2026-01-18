@@ -1,0 +1,81 @@
+# =============================================================================
+# .dockerignore - Arquivos ignorados no build da imagem Docker
+# =============================================================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg
+
+# Ambiente virtual
+venv/
+env/
+ENV/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose*.yml
+
+# Documentação
+*.md
+docs/
+
+# Logs e databases locais
+*.log
+*.db
+*.sqlite
+*.sqlite3
+logs/
+
+# Ambiente local
+.env
+.env.local
+.env.*.local
+
+# Testes
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Migrações (opcional - comente se quiser incluir)
+# alembic/versions/*.py
+
+# Scripts de desenvolvimento
+START.bat
+start.sh
+scripts/
+
+# Misc
+*.tmp
+*.bak
+*.cache

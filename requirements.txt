@@ -1,0 +1,30 @@
+# FastAPI e servidor
+fastapi
+uvicorn
+python-multipart
+
+# Banco de dados
+sqlalchemy
+pymysql
+alembic
+cryptography
+
+# Autenticação e segurança
+python-jose
+passlib
+python-dotenv
+pydantic
+pydantic-settings
+
+# QR Code e PDF
+qrcode
+reportlab
+pillow
+
+# Utilitários
+python-dateutil
+pytz
+httpx
+
+# Monitoramento e logging
+loguru

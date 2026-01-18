@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"C:/Users/gamin/Desktop/RFlex Client/rflex_backend/venv/Scripts/python.exe\":*)",
+      "Bash(\"C:/Users/gamin/Desktop/RFlex Client/rflex_backend/venv/Scripts/pip.exe\" install:*)",
+      "Bash(\"C:/Users/gamin/Desktop/RFlex Client/rflex_backend/venv/Scripts/python.exe\" \"c:/Users/gamin/Desktop/RFlex Client/rflex_backend/scripts/init_admin.py\")",
+      "Bash(\"C:/Users/gamin/Desktop/RFlex Client/rflex_backend/venv/Scripts/pip.exe\" install --upgrade \"passlib[bcrypt]\" bcrypt)",
+      "Bash(grep:*)",
+      "Bash(findstr:*)",
+      "Bash(\"C:/Users/gamin/Desktop/RFlex Client/rflex_backend/venv/Scripts/python.exe\" \"c:/Users/gamin/Desktop/RFlex Client/rflex_backend/scripts/init_plans.py\")",
+      "Bash(dir:*)",
+      "Bash(tree:*)"
+    ]
+  }
+}

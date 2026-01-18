@@ -1,0 +1,893 @@
+{
+  "api_info": {
+    "name": "RFlex License Server API",
+    "version": "1.0.0",
+    "base_url": "/api/v1",
+    "description": "API de licenciamento do RFlex Client para gerenciamento de empresas, planos, licenças e dispositivos"
+  },
+  "authentication": {
+    "type": "Bearer JWT",
+    "login_endpoint": "POST /api/v1/auth/login",
+    "header": "Authorization: Bearer {token}",
+    "token_expires": "8 horas (padrão)"
+  },
+  "routes": {
+    "auth": {
+      "tag": "Autenticação",
+      "description": "Rotas para autenticação de administradores",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/v1/auth/login",
+          "description": "Realiza login de administrador",
+          "auth_required": false,
+          "request": {
+            "schema": "AdminLogin",
+            "body": {
+              "email": "string (email)",
+              "password": "string"
+            },
+            "example": {
+              "email": "admin@rflex.com",
+              "password": "senha123"
+            }
+          },
+          "response": {
+            "schema": "Token",
+            "body": {
+              "access_token": "string (JWT)",
+              "token_type": "string (bearer)",
+              "expires_in": "int (segundos)"
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/auth/me",
+          "description": "Retorna informações do administrador autenticado",
+          "auth_required": true,
+          "response": {
+            "schema": "AdminUserResponse",
+            "body": {
+              "id": "string (UUID)",
+              "email": "string (email)",
+              "full_name": "string",
+              "is_active": "boolean",
+              "is_superadmin": "boolean",
+              "created_at": "datetime",
+              "updated_at": "datetime"
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/auth/logout",
+          "description": "Faz logout do administrador",
+          "auth_required": true,
+          "response": {
+            "body": {
+              "message": "string"
+            }
+          }
+        }
+      ]
+    },
+    "companies": {
+      "tag": "Empresas",
+      "description": "Gerenciamento de empresas/clientes",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/v1/companies",
+          "description": "Cria uma nova empresa",
+          "auth_required": true,
+          "request": {
+            "schema": "CompanyCreate",
+            "body": {
+              "trading_name": "string (2-255 chars) - Nome fantasia",
+              "legal_name": "string (2-255 chars) - Razão social",
+              "cnpj": "string (opcional, max 20 chars)",
+              "email": "string (email)",
+              "phone": "string (opcional, max 20 chars)",
+              "address": "string (opcional)",
+              "notes": "string (opcional)"
+            },
+            "example": {
+              "trading_name": "Minha Empresa LTDA",
+              "legal_name": "Minha Empresa LTDA",
+              "cnpj": "12.345.678/0001-90",
+              "email": "contato@empresa.com",
+              "phone": "(11) 99999-9999",
+              "address": "Rua Example, 123",
+              "notes": "Cliente VIP"
+            }
+          },
+          "response": {
+            "schema": "CompanyResponse"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/companies",
+          "description": "Lista empresas com paginação e filtros",
+          "auth_required": true,
+          "params": {
+            "is_active": "boolean (opcional) - Filtra por status",
+            "search": "string (opcional) - Busca por nome, CNPJ ou email",
+            "page": "int (default: 1, min: 1)",
+            "size": "int (default: 20, min: 1, max: 100)"
+          },
+          "response": {
+            "schema": "CompanyListResponse",
+            "body": {
+              "items": "[]CompanyResponse",
+              "total": "int",
+              "page": "int",
+              "size": "int",
+              "pages": "int"
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/companies/{company_id}",
+          "description": "Retorna detalhes de uma empresa específica",
+          "auth_required": true,
+          "params": {
+            "company_id": "string (UUID) - ID da empresa"
+          },
+          "response": {
+            "schema": "CompanyResponse"
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/v1/companies/{company_id}",
+          "description": "Atualiza dados de uma empresa",
+          "auth_required": true,
+          "params": {
+            "company_id": "string (UUID) - ID da empresa"
+          },
+          "request": {
+            "schema": "CompanyUpdate",
+            "body": {
+              "trading_name": "string (opcional)",
+              "legal_name": "string (opcional)",
+              "cnpj": "string (opcional)",
+              "email": "string (email, opcional)",
+              "phone": "string (opcional)",
+              "address": "string (opcional)",
+              "notes": "string (opcional)",
+              "is_active": "boolean (opcional)"
+            }
+          },
+          "response": {
+            "schema": "CompanyResponse"
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/v1/companies/{company_id}",
+          "description": "Remove uma empresa (requer superadmin)",
+          "auth_required": true,
+          "requires_superadmin": true,
+          "params": {
+            "company_id": "string (UUID) - ID da empresa"
+          },
+          "response": {
+            "status": 204
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/companies/{company_id}/stats",
+          "description": "Retorna estatísticas de uma empresa",
+          "auth_required": true,
+          "params": {
+            "company_id": "string (UUID) - ID da empresa"
+          },
+          "response": {
+            "body": {
+              "company_id": "string",
+              "company_name": "string",
+              "total_licenses": "int",
+              "active_licenses": "int",
+              "total_devices": "int",
+              "active_devices": "int"
+            }
+          }
+        }
+      ]
+    },
+    "plans": {
+      "tag": "Planos",
+      "description": "Gerenciamento de planos de licenciamento",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/v1/plans",
+          "description": "Cria um novo plano de licenciamento",
+          "auth_required": true,
+          "request": {
+            "schema": "PlanCreate",
+            "body": {
+              "name": "string (2-100 chars) - Nome do plano",
+              "max_devices": "int - Máximo de coletores (-1 para ilimitado)",
+              "price_per_device": "float - Preço por coletor/mês (R$)",
+              "description": "string (opcional) - Descrição do plano",
+              "features": "string (opcional) - Recursos (JSON)",
+              "is_enterprise": "boolean (default: false) - Se é plano enterprise"
+            },
+            "example": {
+              "name": "Plano Premium",
+              "max_devices": 10,
+              "price_per_device": 49.90,
+              "description": "Plano para pequenas empresas",
+              "features": "{\"support\": \"24/7\", \"updates\": true}",
+              "is_enterprise": false
+            }
+          },
+          "response": {
+            "schema": "PlanResponse"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/plans",
+          "description": "Lista planos com paginação e filtros",
+          "auth_required": true,
+          "params": {
+            "is_active": "boolean (opcional) - Filtra por status",
+            "is_enterprise": "boolean (opcional) - Filtra enterprise",
+            "page": "int (default: 1, min: 1)",
+            "size": "int (default: 20, min: 1, max: 100)"
+          },
+          "response": {
+            "schema": "PlanListResponse",
+            "body": {
+              "items": "[]PlanResponse",
+              "total": "int",
+              "page": "int",
+              "size": "int",
+              "pages": "int"
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/plans/active",
+          "description": "Retorna todos os planos ativos disponíveis",
+          "auth_required": true,
+          "response": {
+            "schema": "[]PlanResponse"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/plans/{plan_id}",
+          "description": "Retorna detalhes de um plano específico",
+          "auth_required": true,
+          "params": {
+            "plan_id": "string (UUID) - ID do plano"
+          },
+          "response": {
+            "schema": "PlanResponse"
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/v1/plans/{plan_id}",
+          "description": "Atualiza dados de um plano",
+          "auth_required": true,
+          "params": {
+            "plan_id": "string (UUID) - ID do plano"
+          },
+          "request": {
+            "schema": "PlanUpdate",
+            "body": {
+              "name": "string (opcional)",
+              "max_devices": "int (opcional)",
+              "price_per_device": "float (opcional)",
+              "description": "string (opcional)",
+              "features": "string (opcional)",
+              "is_active": "boolean (opcional)",
+              "is_enterprise": "boolean (opcional)"
+            }
+          },
+          "response": {
+            "schema": "PlanResponse"
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/v1/plans/{plan_id}",
+          "description": "Remove um plano",
+          "auth_required": true,
+          "params": {
+            "plan_id": "string (UUID) - ID do plano"
+          },
+          "response": {
+            "status": 204
+          }
+        }
+      ]
+    },
+    "licenses": {
+      "tag": "Licenças",
+      "description": "Gerenciamento de licenças de uso",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/v1/licenses",
+          "description": "Cria uma nova licença",
+          "auth_required": true,
+          "request": {
+            "schema": "LicenseCreate",
+            "body": {
+              "company_id": "string (UUID) - ID da empresa",
+              "plan_id": "string (UUID) - ID do plano",
+              "validity_days": "int (1-365, default: 30) - Validade em dias",
+              "notes": "string (opcional) - Observações"
+            },
+            "example": {
+              "company_id": "550e8400-e29b-41d4-a716-446655440000",
+              "plan_id": "650e8400-e29b-41d4-a716-446655440000",
+              "validity_days": 365,
+              "notes": "Licença anual"
+            }
+          },
+          "response": {
+            "schema": "LicenseResponse"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/licenses",
+          "description": "Lista licenças com paginação e filtros",
+          "auth_required": true,
+          "params": {
+            "company_id": "string (opcional) - Filtra por empresa",
+            "status": "enum (active, expired, inactive, suspended) (opcional)",
+            "page": "int (default: 1, min: 1)",
+            "size": "int (default: 20, min: 1, max: 100)"
+          },
+          "response": {
+            "schema": "LicenseListResponse",
+            "body": {
+              "items": "[]LicenseResponse",
+              "total": "int",
+              "page": "int",
+              "size": "int",
+              "pages": "int"
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/licenses/{license_id}",
+          "description": "Retorna detalhes de uma licença com seus dispositivos",
+          "auth_required": true,
+          "params": {
+            "license_id": "string (UUID) - ID da licença"
+          },
+          "response": {
+            "schema": "LicenseWithDevices",
+            "body": {
+              "id": "string",
+              "code": "string - Código da licença (32 chars)",
+              "status": "enum",
+              "company_id": "string",
+              "plan_id": "string",
+              "expires_at": "datetime",
+              "created_at": "datetime",
+              "updated_at": "datetime",
+              "is_valid": "boolean",
+              "is_expired": "boolean",
+              "active_devices": "int",
+              "max_devices": "int",
+              "devices": "[]dict - Dispositivos ativados"
+            }
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/v1/licenses/{license_id}",
+          "description": "Atualiza dados de uma licença",
+          "auth_required": true,
+          "params": {
+            "license_id": "string (UUID) - ID da licença"
+          },
+          "request": {
+            "schema": "LicenseUpdate",
+            "body": {
+              "status": "enum (active, expired, inactive, suspended) (opcional)",
+              "notes": "string (opcional)"
+            }
+          },
+          "response": {
+            "schema": "LicenseResponse"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/licenses/{license_id}/renew",
+          "description": "Renova a validade de uma licença",
+          "auth_required": true,
+          "params": {
+            "license_id": "string (UUID) - ID da licença"
+          },
+          "request": {
+            "schema": "LicenseRenew",
+            "body": {
+              "days": "int (1-365) - Dias a adicionar à validade"
+            },
+            "example": {
+              "days": 30
+            }
+          },
+          "response": {
+            "schema": "LicenseResponse"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/licenses/{license_id}/suspend",
+          "description": "Suspende uma licença",
+          "auth_required": true,
+          "params": {
+            "license_id": "string (UUID) - ID da licença"
+          },
+          "response": {
+            "schema": "LicenseResponse"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/licenses/{license_id}/activate",
+          "description": "Ativa uma licença inativa/suspensa",
+          "auth_required": true,
+          "params": {
+            "license_id": "string (UUID) - ID da licença"
+          },
+          "response": {
+            "schema": "LicenseResponse"
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/v1/licenses/{license_id}",
+          "description": "Remove uma licença",
+          "auth_required": true,
+          "params": {
+            "license_id": "string (UUID) - ID da licença"
+          },
+          "response": {
+            "status": 204
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/licenses/{license_id}/devices",
+          "description": "Lista todos os dispositivos de uma licença",
+          "auth_required": true,
+          "params": {
+            "license_id": "string (UUID) - ID da licença",
+            "is_active": "boolean (opcional) - Filtra por status"
+          },
+          "response": {
+            "body": {
+              "license_id": "string",
+              "total": "int",
+              "items": "[]DeviceActivationDetail"
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/licenses/{license_id}/qrcode",
+          "description": "Gera e retorna o QR Code de uma licença (PNG)",
+          "auth_required": true,
+          "params": {
+            "license_id": "string (UUID) - ID da licença",
+            "size": "int (default: 300, min: 100, max: 1000) - Tamanho da imagem"
+          },
+          "response": {
+            "content_type": "image/png",
+            "headers": {
+              "Content-Disposition": "inline; filename=qrcode_{code}.png"
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/licenses/{license_id}/pdf",
+          "description": "Gera e retorna um PDF com os detalhes da licença",
+          "auth_required": true,
+          "params": {
+            "license_id": "string (UUID) - ID da licença"
+          },
+          "response": {
+            "content_type": "application/pdf",
+            "headers": {
+              "Content-Disposition": "attachment; filename=license_{code}.pdf"
+            }
+          }
+        }
+      ]
+    },
+    "devices": {
+      "tag": "Dispositivos",
+      "description": "Gerenciamento de coletores ativados",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/v1/devices",
+          "description": "Lista dispositivos com paginação e filtros",
+          "auth_required": true,
+          "params": {
+            "license_id": "string (opcional) - Filtra por licença",
+            "is_active": "boolean (opcional) - Filtra por status",
+            "page": "int (default: 1, min: 1)",
+            "size": "int (default: 20, min: 1, max: 100)"
+          },
+          "response": {
+            "schema": "DeviceListResponse",
+            "body": {
+              "items": "[]DeviceActivationDetail",
+              "total": "int",
+              "page": "int",
+              "size": "int",
+              "pages": "int"
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/devices/{activation_id}",
+          "description": "Retorna detalhes de um dispositivo específico",
+          "auth_required": true,
+          "params": {
+            "activation_id": "string (UUID) - ID da ativação"
+          },
+          "response": {
+            "schema": "DeviceActivationDetail",
+            "body": {
+              "id": "string",
+              "device_id": "string - UUID do dispositivo",
+              "device_name": "string (opcional)",
+              "device_manufacturer": "string (opcional)",
+              "device_model": "string (opcional)",
+              "android_version": "string (opcional)",
+              "app_version": "string (opcional)",
+              "activated_at": "datetime",
+              "last_validated_at": "datetime (opcional)",
+              "is_active": "boolean",
+              "is_revoked": "boolean",
+              "revoked_at": "datetime (opcional)",
+              "revoke_reason": "string (opcional)"
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/devices/{activation_id}/revoke",
+          "description": "Revoga um dispositivo (libera vaga na licença)",
+          "auth_required": true,
+          "params": {
+            "activation_id": "string (UUID) - ID da ativação"
+          },
+          "request": {
+            "schema": "DeviceRevocationRequest",
+            "body": {
+              "reason": "string (opcional) - Motivo da revogação"
+            },
+            "example": {
+              "reason": "Dispositivo perdido"
+            }
+          },
+          "response": {
+            "schema": "DeviceActivationDetail"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/devices/{activation_id}/reactivate",
+          "description": "Reativa um dispositivo revogado",
+          "auth_required": true,
+          "params": {
+            "activation_id": "string (UUID) - ID da ativação"
+          },
+          "response": {
+            "schema": "DeviceActivationDetail"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/devices/{activation_id}/logs",
+          "description": "Retorna logs de validação de um dispositivo",
+          "auth_required": true,
+          "params": {
+            "activation_id": "string (UUID) - ID da ativação",
+            "page": "int (default: 1, min: 1)",
+            "size": "int (default: 50, min: 1, max: 100)"
+          },
+          "response": {
+            "body": {
+              "activation_id": "string",
+              "total": "int",
+              "page": "int",
+              "size": "int",
+              "items": "[]ValidationLog"
+            }
+          }
+        }
+      ]
+    },
+    "dashboard": {
+      "tag": "Dashboard",
+      "description": "Métricas e estatísticas do sistema",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/v1/dashboard/stats",
+          "description": "Retorna estatísticas gerais do dashboard",
+          "auth_required": true,
+          "response": {
+            "schema": "DashboardStats",
+            "body": {
+              "total_companies": "int",
+              "active_companies": "int",
+              "total_licenses": "int",
+              "active_licenses": "int",
+              "expired_licenses": "int",
+              "inactive_licenses": "int",
+              "total_devices": "int",
+              "active_devices": "int",
+              "revoked_devices": "int"
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/dashboard/plans-usage",
+          "description": "Retorna estatísticas de uso por plano",
+          "auth_required": true,
+          "response": {
+            "schema": "[]PlanUsageStats",
+            "body": "[] {"
+          },
+          "response_items": {
+            "plan_name": "string",
+            "plan_id": "string",
+            "total_licenses": "int",
+            "active_licenses": "int",
+            "total_devices": "int",
+            "active_devices": "int",
+            "occupancy_rate": "float - Percentual de ocupação"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/dashboard/recent-activations",
+          "description": "Retorna as ativações mais recentes",
+          "auth_required": true,
+          "params": {
+            "limit": "int (default: 10) - Número de registros"
+          },
+          "response": {
+            "schema": "[]object",
+            "body": "[] {"
+          },
+          "response_items": {
+            "id": "string",
+            "device_name": "string",
+            "device_model": "string",
+            "company_name": "string",
+            "plan_name": "string",
+            "activated_at": "datetime",
+            "is_active": "boolean"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/dashboard/expiring-licenses",
+          "description": "Retorna licenças que expiram em breve",
+          "auth_required": true,
+          "params": {
+            "days": "int (default: 7) - Dias para expiração"
+          },
+          "response": {
+            "schema": "[]object",
+            "body": "[] {"
+          },
+          "response_items": {
+            "id": "string",
+            "code": "string",
+            "company_name": "string",
+            "plan_name": "string",
+            "expires_at": "datetime",
+            "active_devices": "int",
+            "max_devices": "int"
+          }
+        }
+      ]
+    },
+    "public": {
+      "tag": "Público (RFlex Client)",
+      "description": "Rotas usadas pelo app RFlex Client (coletores) - não requer autenticação de administrador",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/v1/public/activate",
+          "description": "Ativa um coletor (dispositivo) em uma licença",
+          "auth_required": false,
+          "request": {
+            "schema": "DeviceActivationRequest",
+            "body": {
+              "license_code": "string (32 chars) - Código da licença",
+              "device_id": "string - UUID do dispositivo",
+              "device_name": "string (opcional) - Nome do coletor",
+              "device_manufacturer": "string (opcional) - Fabricante",
+              "device_model": "string (opcional) - Modelo",
+              "android_version": "string (opcional) - Versão do Android",
+              "app_version": "string (opcional) - Versão do app RFlex",
+              "hardware_info": "dict (opcional) - Infos adicionais"
+            },
+            "example": {
+              "license_code": "ABCD1234EFGH5678IJKL9012MNOP3456",
+              "device_id": "550e8400-e29b-41d4-a716-446655440000",
+              "device_name": "Coletor 01",
+              "device_manufacturer": "Zebra",
+              "device_model": "TC52",
+              "android_version": "13",
+              "app_version": "1.0.0",
+              "hardware_info": {"imei": "123456789012345"}
+            }
+          },
+          "response": {
+            "schema": "DeviceActivationResponse",
+            "body": {
+              "success": "boolean",
+              "message": "string",
+              "activation_token": "string - Token para validações futuras",
+              "license_expires_at": "datetime",
+              "company_name": "string",
+              "plan_name": "string"
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/public/validate",
+          "description": "Valida se um dispositivo tem licença válida",
+          "auth_required": false,
+          "request": {
+            "schema": "DeviceValidationRequest",
+            "body": {
+              "activation_token": "string - Token de ativação",
+              "device_id": "string - UUID do dispositivo",
+              "is_offline": "boolean (default: false) - Se está em modo offline"
+            },
+            "example": {
+              "activation_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+              "device_id": "550e8400-e29b-41d4-a716-446655440000",
+              "is_offline": false
+            }
+          },
+          "response": {
+            "schema": "DeviceValidationResponse",
+            "body": {
+              "valid": "boolean",
+              "message": "string",
+              "license_expires_at": "datetime (opcional)",
+              "grace_period_until": "datetime (opcional) - Fim do período de tolerância offline",
+              "company_name": "string (opcional)",
+              "plan_name": "string (opcional)"
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/public/license/{license_code}/info",
+          "description": "Retorna informações públicas sobre uma licença (pré-validação)",
+          "auth_required": false,
+          "params": {
+            "license_code": "string - Código da licença (32 chars)"
+          },
+          "response": {
+            "body": {
+              "code": "string",
+              "status": "enum",
+              "expires_at": "datetime",
+              "is_valid": "boolean",
+              "plan_name": "string",
+              "company_name": "string",
+              "max_devices": "int",
+              "active_devices": "int",
+              "available_slots": "int"
+            }
+          }
+        }
+      ]
+    },
+    "health": {
+      "tag": "Health Check",
+      "description": "Endpoints para verificação de saúde da API",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "description": "Health check básico",
+          "auth_required": false,
+          "response": {
+            "body": {
+              "message": "string",
+              "status": "string",
+              "version": "string",
+              "environment": "string"
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "description": "Health check detalhado",
+          "auth_required": false,
+          "response": {
+            "body": {
+              "status": "string",
+              "database": "string"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "enums": {
+    "LicenseStatus": {
+      "description": "Status possíveis de uma licença",
+      "values": [
+        "active - Ativa e válida",
+        "expired - Expirou a validade",
+        "inactive - Ainda não ativada",
+        "suspended - Suspensa administrativamente"
+      ]
+    },
+    "ValidationStatus": {
+      "description": "Status possíveis de uma validação",
+      "values": [
+        "success - Validação bem-sucedida",
+        "failed - Validação falhou",
+        "grace_period - Em período de tolerância offline"
+      ]
+    }
+  },
+  "pagination": {
+    "description": "Padrão de paginação usado nas listas",
+    "params": {
+      "page": "Número da página (inicia em 1)",
+      "size": "Itens por página (varia por endpoint, geralmente 1-100)"
+    },
+    "response": {
+      "items": "[] - Lista de itens",
+      "total": "int - Total de itens",
+      "page": "int - Página atual",
+      "size": "int - Itens por página",
+      "pages": "int - Total de páginas"
+    }
+  },
+  "errors": {
+    "description": "Formato padrão de erros",
+    "body": {
+      "detail": "string - Descrição do erro"
+    },
+    "common_codes": {
+      "400": "Bad Request - Requisição inválida",
+      "401": "Unauthorized - Não autenticado",
+      "403": "Forbidden - Sem permissão",
+      "404": "Not Found - Recurso não encontrado",
+      "422": "Unprocessable Entity - Validação falhou",
+      "500": "Internal Server Error - Erro no servidor"
+    }
+  }
+}
