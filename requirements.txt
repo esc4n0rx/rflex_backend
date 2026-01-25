@@ -16,7 +16,7 @@ bcrypt<4
 python-dotenv
 pydantic
 pydantic-settings
-pydantic-email
+email-validator
 
 # QR Code e PDF
 qrcode
