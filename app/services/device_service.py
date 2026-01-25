@@ -47,7 +47,7 @@ class DeviceService:
             raise ValueError(f"Licença não está ativa. Status: {license.status.value}")
 
         # Verifica se não expirou
-        if license.is_expired():
+        if license.is_expired:
             raise ValueError("Licença expirada")
 
         # Verifica disponibilidade
@@ -162,7 +162,7 @@ class DeviceService:
         now = datetime.utcnow()
         grace_period_end = activation.last_validated_at + timedelta(hours=settings.grace_period_hours) if activation.last_validated_at else None
 
-        if license.is_expired():
+        if license.is_expired:
             # Verifica período de tolerância offline
             if is_offline and grace_period_end and grace_period_end > now:
                 # Período de tolerância

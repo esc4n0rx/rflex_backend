@@ -143,7 +143,7 @@ class LicenseService:
             Licença atualizada
         """
         # Se já expirou, conta a partir de agora
-        if license.is_expired():
+        if license.is_expired:
             license.expires_at = datetime.utcnow() + timedelta(days=days)
         else:
             # Se não expirou, adiciona à data atual
@@ -168,7 +168,7 @@ class LicenseService:
     @staticmethod
     def activate_license(db: Session, license: License) -> License:
         """Ativa uma licença."""
-        if license.is_expired():
+        if license.is_expired:
             raise ValueError("Não é possível ativar licença expirada. Renove primeiro.")
 
         license.status = LicenseStatus.ACTIVE

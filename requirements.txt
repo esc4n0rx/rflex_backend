@@ -12,9 +12,11 @@ cryptography
 # Autenticação e segurança
 python-jose
 passlib
+bcrypt<4
 python-dotenv
 pydantic
 pydantic-settings
+pydantic-email
 
 # QR Code e PDF
 qrcode

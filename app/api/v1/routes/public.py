@@ -147,7 +147,7 @@ def get_license_info(
         "code": license.code,
         "status": license.status.value,
         "expires_at": license.expires_at,
-        "is_valid": license.is_valid(),
+        "is_valid": license.is_valid,
         "plan_name": license.plan.name,
         "company_name": license.company.trading_name,
         "max_devices": license.plan.max_devices,

@@ -97,6 +97,7 @@ class License(BaseModel):
         lazy="selectin"
     )
 
+    @property
     def is_valid(self) -> bool:
         """
         Verifica se a licença está válida.
@@ -110,6 +111,7 @@ class License(BaseModel):
             return False
         return True
 
+    @property
     def is_expired(self) -> bool:
         """
         Verifica se a licença está expirada.
@@ -127,3 +129,13 @@ class License(BaseModel):
             Número de ativações ativas
         """
         return len([d for d in self.device_activations if d.is_active])
+
+    @property
+    def active_devices(self) -> int:
+        """Número de dispositivos ativos (para response schema)."""
+        return self.get_active_devices_count()
+
+    @property
+    def max_devices(self) -> int:
+        """Máximo de dispositivos permitidos (para response schema)."""
+        return self.plan.max_devices if self.plan else 0
