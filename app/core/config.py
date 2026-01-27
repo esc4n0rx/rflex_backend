@@ -59,17 +59,17 @@ class Settings(BaseSettings):
     @field_validator("backend_cors_origins", mode="before")
     @classmethod
     def parse_cors_origins(cls, v):
-        """Parse CORS origins de string para lista."""
         if isinstance(v, str):
-            # Se for uma string JSON válida (ex: '["http://..."]')
-            if v.startswith("["):
+            # Remove espaços e quebras de linha acidentais
+            v = v.strip()
+            if v.startswith("[") and v.endswith("]"):
                 import json
                 try:
                     return json.loads(v)
                 except json.JSONDecodeError:
                     pass
-            # Se for string separada por vírgula
-            return [origin.strip() for origin in v.split(",")]
+            # Split por vírgula e limpa cada entrada
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
         return v
 
     # Logging
