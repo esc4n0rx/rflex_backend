@@ -52,7 +52,7 @@ class Settings(BaseSettings):
 
     # CORS
     backend_cors_origins: Union[List[str], str] = Field(
-        default=["http://localhost:8000", "http://localhost:3000"],
+        default=["https://www.rflex.sbs", "https://rflex.sbs"],
         description="Origens permitidas para CORS"
     )
 
