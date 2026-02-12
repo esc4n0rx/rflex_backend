@@ -78,11 +78,11 @@ class Settings(BaseSettings):
 
     # Admin Master
     master_admin_email: str = Field(
-        default="admin@rflex.com",
+        default="",
         description="Email do administrador master"
     )
     master_admin_password: str = Field(
-        default="Admin@123456",
+        default="",
         description="Senha do administrador master"
     )
 
