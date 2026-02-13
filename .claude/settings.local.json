@@ -9,7 +9,8 @@
       "Bash(findstr:*)",
       "Bash(\"C:/Users/gamin/Desktop/RFlex Client/rflex_backend/venv/Scripts/python.exe\" \"c:/Users/gamin/Desktop/RFlex Client/rflex_backend/scripts/init_plans.py\")",
       "Bash(dir:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(git log:*)"
     ]
   }
 }
